@@ -3,9 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- PWA 및 오픈그래프 설정 -->
     <title>점심 메뉴 룰렛</title>
-    <!-- [추가된 부분] 컨페티(꽃가루) 효과를 위한 라이브러리 -->
+    <meta name="description" content="오늘 점심 뭐 먹을지 고민될 때! 룰렛을 돌려보세요.">
+    <meta name="theme-color" content="#3498db">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="main.png">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="점심 메뉴 룰렛">
+    <meta property="og:description" content="오늘 뭐 먹을지 고민이라면? 룰렛으로 결정하세요!">
+    <meta property="og:image" content="og_image.png">
+    <!-- GitHub Pages 주소에 맞게 URL을 수정해주세요 -->
+    <meta property="og:url" content="https://zeroslee21.github.io/gem-lunch_roulette/">
+    <meta property="og:type" content="website">
+
+    <!-- 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    
     <style>
         /* --- CSS 스타일 --- */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
@@ -119,7 +136,6 @@
             transform: translateY(0);
         }
 
-        /* 메뉴 관리 UI 스타일 */
         .add-menu-form {
             display: flex;
             gap: 10px;
@@ -210,7 +226,6 @@
             background-color: #e9e9e9;
         }
 
-        /* --- 결과 표시를 위한 모달 스타일 --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 1000; }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal-content { background-color: white; padding: 30px 40px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.3s ease; }
@@ -257,14 +272,11 @@
 
     <div id="result-modal" class="modal-overlay">
         <div class="modal-content">
-            <!-- [수정된 부분] 정적인 이모지 제거 -->
             <h2>오늘의 메뉴!</h2>
             <p id="result-text"></p>
             <button id="close-modal-button">닫기</button>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     
     <script>
         // --- JavaScript 로직 ---
@@ -286,28 +298,14 @@
         const MENU_STORAGE_KEY = 'rouletteMenuItems';
         const COLORS_STORAGE_KEY = 'rouletteMenuColors';
 
-        /**
-         * [추가된 함수] 화면에 컨페티(꽃가루) 효과를 만듭니다.
-         */
         const triggerConfetti = () => {
-            const duration = 2 * 1000;
-            const animationEnd = Date.now() + duration;
-            // zIndex를 모달 오버레이(1000)보다 높게 설정하여 컨페티가 위에 보이게 함
+            const duration = 2 * 1000, animationEnd = Date.now() + duration;
             const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1001 };
-
-            function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
-            }
-
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
             const interval = setInterval(function() {
                 const timeLeft = animationEnd - Date.now();
-
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-
+                if (timeLeft <= 0) return clearInterval(interval);
                 const particleCount = 50 * (timeLeft / duration);
-                // 화면 양쪽에서 터져나오도록 설정
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
             }, 250);
@@ -319,8 +317,7 @@
         };
 
         const loadData = () => {
-            const savedMenus = localStorage.getItem(MENU_STORAGE_KEY);
-            const savedColors = localStorage.getItem(COLORS_STORAGE_KEY);
+            const savedMenus = localStorage.getItem(MENU_STORAGE_KEY), savedColors = localStorage.getItem(COLORS_STORAGE_KEY);
             if (savedMenus && savedColors) {
                 menuItems = JSON.parse(savedMenus);
                 colors = JSON.parse(savedColors);
@@ -361,11 +358,7 @@
                 li.innerHTML = `<span>${item}</span><button class="delete-btn" data-index="${index}">삭제</button>`;
                 menuList.appendChild(li);
             });
-            if (menuItems.length > 2) {
-                toggleListBtn.style.display = 'block';
-            } else {
-                toggleListBtn.style.display = 'none';
-            }
+            toggleListBtn.style.display = menuItems.length > 2 ? 'block' : 'none';
             menuList.classList.remove('expanded');
             toggleListBtn.textContent = '더보기';
         };
@@ -415,14 +408,13 @@
                 if(winner){ 
                     resultText.textContent=`【 ${winner} 】`; 
                     modal.classList.add('show');
-                    triggerConfetti(); // [수정된 부분] 컨페티 효과 호출
+                    triggerConfetti();
                 }
             },100);
         }
         
         const closeModal = () => modal.classList.remove('show');
 
-        // --- 이벤트 리스너 등록 ---
         spinButton.addEventListener('click', spin);
         addMenuButton.addEventListener('click', handleAddMenu);
         menuInput.addEventListener('keypress', (e) => { if(e.key==='Enter') handleAddMenu(); });
@@ -438,8 +430,21 @@
             toggleListBtn.textContent = menuList.classList.contains('expanded') ? '접기' : '더보기';
         });
 
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
         // --- 초기화 ---
-        loadData(); renderMenuList(); drawRoulette();
+        loadData(); 
+        renderMenuList(); 
+        drawRoulette();
     </script>
 </body>
 </html>
