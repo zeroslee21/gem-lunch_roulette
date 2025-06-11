@@ -1,5 +1,5 @@
 // 캐시 이름 정의
-const CACHE_NAME = 'lunch-roulette-cache-v1';
+const CACHE_NAME = 'lunch-roulette-cache-v2';
 // 캐시할 파일 목록
 const urlsToCache = [
   './',
